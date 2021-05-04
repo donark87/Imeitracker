@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<input type="file" id="fileUpload" />
+<input type="button" id="upload" value="Upload" onclick="Upload()" />
+<hr />
+<div id="dvExcel"></div>
+<br>
+<form>
+<label for="searchPhrase">IMEI 1: </label>
+<input type="text" name="searchPhrase" id="searchPhrase" value="">
+    = <a href="javascript: searchExcel();">Search</a>   <output name="code" for="IMEI1"></output>
+</form>
+    <br>
+<form>
+<label for="IMEI2">IMEI 2: </label>
+<input type="text" name="IMEI1" id="IMEI2" value=""><br>
+</form>
+    <br>
+<form>
+<label for="IMEI3">IMEI 3: </label>
+<input type="text" name="IMEI1" id="IMEI3" value=""><br>
+</form>
+    <br>
+</body>
+</html>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/xlsx.full.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/jszip.js"></script>
+<script type="text/javascript">
+    function Upload() {
+        //Reference the FileUpload element.
+        var fileUpload = document.getElementById("fileUpload");
+
+        //Validate whether File is valid Excel file.
+        var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx)$/;
+        if (regex.test(fileUpload.value.toLowerCase())) {
+            if (typeof (FileReader) != "undefined") {
+                var reader = new FileReader();
+
+                //For Browsers other than IE.
+                if (reader.readAsBinaryString) {
+                    reader.onload = function (e) {
+                       // ProcessExcel(e.target.result);
+
+                    };
+                    reader.readAsBinaryString(fileUpload.files[0]);
+                } else {
+                    //For IE Browser.
+                    reader.onload = function (e) {
+                        var data = "";
+                        var bytes = new Uint8Array(e.target.result);
+                        for (var i = 0; i < bytes.byteLength; i++) {
+                            data += String.fromCharCode(bytes[i]);
+                        }
+                      //  ProcessExcel(data);
+
+                    };
+                    reader.readAsArrayBuffer(fileUpload.files[0]);
+                }
+            } else {
+                alert("This browser does not support HTML5.");
+            }
+        } else {
+            alert("Please upload a valid Excel file.");
+        }
+    };
+    function searchExcel()
+    {
+        var searchPhrase = document.getElementById('searchPhrase').value;
+        var Worksheet = document.getElementById("fileUpload");
+        var Excel = new ActiveXObject('Excel.Application');
+
+        Excel.Visible = false;
+        var Excel_file = Excel.Workbooks.Open(Worksheet, null, true, null,
+            "abc", null, true, null, null, false, false, null, null, null);
+
+        var range = Excel_file.ActiveSheet.Range('A:A,B:B');
+        var jsRangeArray = new VBArray(range.Value).toArray();
+        var code ;
+
+        var found = false;
+        for(cells in jsRangeArray)
+        {
+            if(jsRangeArray[cells] == searchPhrase)
+            {
+                code = ActiveSheet.Cell('cells:2');
+                document.getElementById("results").innerHTML = "Found";
+                found = true;
+            }
+        }
+
+        if(found == false)
+        {
+            document.getElementById("results").innerHTML = "Not Found";
+        }
+
+        Excel.ActiveWorkbook.Close(true);
+        Excel.Application.Quit();
+        Excel = null;
+    }
+</script>
